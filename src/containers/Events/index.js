@@ -11,44 +11,45 @@ const PER_PAGE = 9;
 
 const EventList = () => {
   const { data, error } = useData();
-  const [type, setType] = useState(null);
+  const [type, setType] = useState();
   const [currentPage, setCurrentPage] = useState(1);
-  const filteredEvents = (
+
+  // Si une catégorie est sélectionnée, filtrer tous les événements pour afficher UNIQUEMENT les événements de la même catégorie
+  const filteredEvents =
     (!type
       ? data?.events
-      : data?.events.filter((event) => event.type === type)) || []
-  ).filter((_, index) => {
-    if (
-      (currentPage - 1) * PER_PAGE <= index &&
-      PER_PAGE * currentPage > index
-    ) {
-      return true;
-    }
-    return false;
-  });
-  const onChange = (evtType) => {
+      : data?.events.filter((event) => event.type === type)) || [];
+
+  const pageEvents = filteredEvents.slice(
+    (currentPage - 1) * PER_PAGE,
+    currentPage * PER_PAGE
+  );
+
+  const changeType = (evtType) => {
     setCurrentPage(1);
     setType(evtType);
   };
-  const pageNumber = Math.floor((filteredEvents?.length || 0) / PER_PAGE) + 1;
-  const typeList = new Set(data?.events.map((event) => event.type));
+
+  const pageNumber = Math.ceil(filteredEvents.length / PER_PAGE);
+  const typeList = Array.from(new Set(data?.events.map((event) => event.type)));
+
   return (
     <>
-      {error && <div>An error occured</div>}
+      {error && <div>Une erreur produite</div>}
       {data === null ? (
-        "loading"
+        "Chargement"
       ) : (
         <>
           <h3 className="SelectTitle">Catégories</h3>
           <Select
-            selection={Array.from(typeList)}
-            onChange={(value) => (value ? onChange(value) : onChange(null))}
+            selection={typeList}
+            onChange={(value) => changeType(value)}
           />
           <div
             id="events"
             className="ListContainer"
           >
-            {filteredEvents.map((event) => (
+            {pageEvents.map((event) => (
               <Modal
                 key={event.id}
                 Content={<ModalEvent event={event} />}
@@ -66,7 +67,7 @@ const EventList = () => {
             ))}
           </div>
           <div className="Pagination">
-            {[...Array(pageNumber || 0)].map((_, n) => (
+            {[...Array(pageNumber)].map((_, n) => (
               <a
                 // eslint-disable-next-line react/no-array-index-key
                 key={n}

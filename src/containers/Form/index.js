@@ -19,7 +19,7 @@ const Form = ({ onSuccess, onError }) => {
       try {
         await mockContactApi();
         setSending(false);
-        onSuccess(true);
+        onSuccess(true); // permet d'informer le composant parent que l'envoi du formulaire s'est déroulé avec succès
       } catch (err) {
         setSending(false);
         onError(err);
